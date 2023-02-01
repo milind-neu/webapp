@@ -171,6 +171,7 @@ const authorizeAndGetUser = async (request, response) => {
 
         // verify auth credentials
         const base64Credentials = request.headers.authorization.split(' ')[1];
+        console.log(base64Credentials)
         const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
         const [email, passwordForAuth] = credentials.split(':');
   
