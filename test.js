@@ -5,7 +5,7 @@ const server = require('./server');
 
 chai.use(chaiHttp);
 
-const userId = '42';
+const userId = '1';
 const userEmail = 'sharma.mil@gmail.com';
 const userPassword = 'Test@123';
 

@@ -1,22 +1,16 @@
-const { connect } = require('../config/db.config');
+const User = require('../../models').User;
 
 class UserRepository {
 
-    db = {};
-
-    constructor() {
-        this.db = connect();
-    }
-
     async getUser(id) {
         try {
-            const user = await this.db.users.findOne({
+            const data = await User.findOne({
                 raw: true,
                 where: {
                   id: id
                 }
             });
-            return user;
+            return data;
         } catch (err) {
             console.log(err);
             return [];
@@ -26,7 +20,7 @@ class UserRepository {
     async createUser(user) {
         let data = {};
         try {
-            data = await this.db.users.create(user);
+            data = await User.create(user);
         } catch(err) {
             data.err = err;
         }
@@ -36,7 +30,7 @@ class UserRepository {
     async updateUser(id, user) {
         try {
 
-            const data = await this.db.users.update(user, {
+            const data = await User.update(user, {
                 raw: true,
                 where: {
                   id: id

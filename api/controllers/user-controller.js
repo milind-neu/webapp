@@ -33,10 +33,6 @@ const getUser = async (request, response) => {
     try {
 
         const {passwordValid, data} = await authorizeAndGetUser(request, response)
-        // console.log("DATA ", data)
-        // console.log("USER ",user)
-        console.log(passwordValid)
-        console.log(data)
         if (passwordValid) {
             const obj = data
             return response.status(200).json({
