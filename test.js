@@ -41,7 +41,6 @@ describe("UserService", function() {
         const user = await userController.createUser(req, res);
         expect(status.calledOnce).to.be.true;
         expect(stub.calledOnce).to.be.true;
-        // expect(req.body.id).to.equal(user.id);
       });
     });
   });
