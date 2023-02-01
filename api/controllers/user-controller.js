@@ -48,7 +48,6 @@ schema
         }
 
     } catch (error) {
-        console.log(error)
         setErrorResponse(error, response);
     }
 
@@ -70,7 +69,6 @@ const createUser = async (request, response) => {
           } else {
             if (validator.validate(username) && schema.validate(password)) {
                 var hashPwd = await bcrypt.hash(password, 10);
-                console.log("Hashed ", hashPwd)
                 request.body.password = hashPwd
 
                 const reqUser = {
@@ -104,7 +102,6 @@ const createUser = async (request, response) => {
 
           
     } catch (error) {
-        console.log(error)
         setErrorResponse(error, response);
     }
 
@@ -164,7 +161,6 @@ const updateUser = async (request, response) => {
         }
 
     } catch (error) {
-        console.log(error)
         return setErrorResponse(error, response);
     }
 
@@ -215,7 +211,6 @@ const authorizeAndGetUser = async (request, response) => {
         }
 
     } catch (error) {
-        console.log(error)
         return {data: setErrorResponse(error, response)};
     }
 
