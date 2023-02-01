@@ -70,13 +70,14 @@ const createUser = async (request, response) => {
           } else {
             if (validator.validate(username) && schema.validate(password)) {
                 var hashPwd = await bcrypt.hash(password, 10);
+                console.log("Hashed ", hashPwd)
                 request.body.password = hashPwd
 
                 const reqUser = {
                     firstName: firstName,
                     lastName: lastName,
                     username: username,
-                    password: password
+                    password: hashPwd
                 }
                 
                 data = await (userService.createUser(reqUser))
