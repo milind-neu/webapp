@@ -17,6 +17,6 @@ app.get('/', (req, res) => {
     res.send(`<h1>API Works !!!</h1>`)
 });
 
-app.listen(port, () => {
+module.exports = app.listen(port, () => {
     console.log(`Server listening on the port  ${port}`);
 })
