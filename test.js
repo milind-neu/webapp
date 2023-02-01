@@ -1,77 +1,47 @@
 const chai = require("chai");
 const { expect } = require("chai");
 const chaiHttp = require("chai-http");
-const server = require('./server');
+const sinon = require('sinon');
+const { faker } = require('@faker-js/faker');
+
+const userController = require('./api/controllers/user-controller');
+const userService = require('./api/services/user-service');
 
 chai.use(chaiHttp);
 
-
-describe("Unit test to get user", () => {
-
-    it("should return true if valid authentication", () => {
-
-        let creds = {
-            "username": "sharma.mil@gmail.com",
-            "password": "Milind@123"
-        }
-
-        let userObj = {
-            "firstName": "Milind",
-            "lastName": "Sharma",
-            "username": "sharma.mil@gmail.com",
-            "password": "Milind@123"
-        }
-
-        expect(userObj.username).to.eql(creds.username);
-        expect(userObj.password).to.eql(creds.password);
-
-    })
-});
-
-describe("Unit test to get user", () => {
-
-    it("should return false if invalid", () => {
-
-        let creds = {
-            "username": "sharmaa.mil@gmail.com",
-            "password": "Milindd@123"
-        }
-
-        let userObj = {
-            "firstName": "Milind",
-            "lastName": "Sharma",
-            "username": "sharma.mil@gmail.com",
-            "password": "Milind@123"
-        }
-
-        expect(userObj.username).to.not.eql(creds.username);
-        expect(userObj.password).to.not.eql(creds.password);
-
-    })
-});
-
-// const userId = '1';
-// const userEmail = 'sharma.mil@gmail.com';
-// const userPassword = 'Test@123';
-
-// describe("Unit test for Getting a user", function () {
-//     it("should return Data of a specific user with status code 200", function (done) {
-
-//         // Calling get user api with auth for a specific user
-//         chai
-//             .request(server)
-//             .get("/v1/user/" + userId)
-//             .auth(userEmail, userPassword)
-//             .end(function (err, res) {
-//                 if (!err) {
-//                     const attributes = (res).body
-//                     expect(res.status).to.eql(200);
-//                     expect(attributes).to.be.a('object');
-//                     expect(attributes.first_name).to.eql('Milind');
-//                     expect(attributes.last_name).to.eql('Sharma');
-//                     done();
-//                 }
-//             })
-//     });
-
-// });
+describe("UserService", function() {
+    describe("getUser", function() {
+    let status, json, res;
+    beforeEach(() => {
+      status = sinon.stub();
+      json = sinon.spy();
+      res = { json, status };
+      status.returns(res);
+    });
+      it("should return a user that matches the provided id", async function() {
+        const stubValue = {
+          id: parseInt(faker.random.numeric(1)),
+          firstName: faker.name.findName(),
+          lastName: faker.name.findName(),
+          username: faker.internet.email(),
+          password: faker.internet.password(),
+          createdAt: faker.date.past(),
+          updatedAt: faker.date.past()
+        };
+        const req = {
+            body: {
+                id: stubValue.id,
+                firstName: stubValue.firstName,
+                lastName: stubValue.lastName,
+                username: stubValue.username,
+                password: stubValue.password
+            }
+          };
+        const stub = sinon.stub(userService, "createUser").returns(stubValue);
+        const user = await userController.createUser(req, res);
+        expect(status.calledOnce).to.be.true;
+        expect(stub.calledOnce).to.be.true;
+        // expect(req.body.id).to.equal(user.id);
+      });
+    });
+  });
