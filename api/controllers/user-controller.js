@@ -28,15 +28,11 @@ schema
             "account_updated": obj.updatedAt
         });
     }
-    
-const getUser = async (request, response) => {
+
+    const getUser = async (request, response) => {
     try {
 
         const {passwordValid, data} = await authorizeAndGetUser(request, response)
-        // console.log("DATA ", data)
-        // console.log("USER ",user)
-        console.log(passwordValid)
-        console.log(data)
         if (passwordValid) {
             const obj = data
             return response.status(200).json({
@@ -74,11 +70,19 @@ const createUser = async (request, response) => {
           } else {
             if (validator.validate(username) && schema.validate(password)) {
                 var hashPwd = await bcrypt.hash(password, 10);
+                console.log("Hashed ", hashPwd)
                 request.body.password = hashPwd
-                data = await (userService.createUser(request.body))
+
+                const reqUser = {
+                    firstName: firstName,
+                    lastName: lastName,
+                    username: username,
+                    password: hashPwd
+                }
+                
+                data = await (userService.createUser(reqUser))
                 if (data.hasOwnProperty("err")) {
                     if (data["err"].original.code == "23505" && data["err"].original.constraint == "Users_username_key") {
-                        console.log("rrrr")
                         return response.status(400).json({
                             message: "Email already exists"
                         });
@@ -89,7 +93,7 @@ const createUser = async (request, response) => {
 
                 
               } else {
-                return response.status(401).json({
+                return response.status(400).json({
                   message: "Invalid Email or password..!!",
                   "password_guidelines: ": ["Minimum length 8", "Maximum length 100", "Must have uppercase letters",
                     "Must have lowercase letters", "Must have digits", "Should not have spaces"
@@ -108,6 +112,13 @@ const createUser = async (request, response) => {
 
 const updateUser = async (request, response) => {
     try {
+
+        if (request.body.id || request.body.createdAt || request.body.updatedAt) {
+            return response.status(400).json({
+                message: "Bad request"
+            });
+        }
+
         const {passwordValid, data} = await authorizeAndGetUser(request, response)
         if (passwordValid) {
 
@@ -116,34 +127,36 @@ const updateUser = async (request, response) => {
                 lastName,
                 password
               } = request.body;
-            
-              if (!firstName || !lastName || !password) {
+
+              if (firstName == "" || lastName == "" || password == "") {
                 return response.status(400).json({
-                    message: "Field is missing"
+                    message: "Field cannot contain null values"
                   });
               } else {
-                if (schema.validate(password)) {
-                    var hashPwd = await bcrypt.hash(password, 10);
-                    request.body.password = hashPwd
-                    const updatedUser = await (userService.updateUser(data.id, request.body))
+                if (password) {
+                    if (schema.validate(password)) {
+                        var hashPwd = await bcrypt.hash(password, 10);
+                        request.body.password = hashPwd
+                      } else {
+                        return response.status(401).json({
+                          message: "Invalid password..!!",
+                          "password_guidelines: ": ["Minimum length 8", "Maximum length 100", "Must have uppercase letters",
+                            "Must have lowercase letters", "Must have digits", "Should not have spaces"
+                          ]
+                        });
+                      }
+                }
+                const updatedUser = await (userService.updateUser(data.id, request.body))
                     const obj = updatedUser[1]
-                    return response.status(200).json({
-                        "id": obj.id, 
-                        "first_name": obj.firstName, 
-                        "last_name": obj.lastName, 
-                        "username": obj.username, 
-                        "account_created": obj.createdAt, 
-                        "account_updated": obj.updatedAt
+                    return response.status(204).json({
+                        // "Message": obj.id, 
+                        // "first_name": obj.firstName, 
+                        // "last_name": obj.lastName, 
+                        // "username": obj.username, 
+                        // "account_created": obj.createdAt, 
+                        // "account_updated": obj.updatedAt
                     });
-                    
-                  } else {
-                    return response.status(401).json({
-                      message: "Invalid password..!!",
-                      "password_guidelines: ": ["Minimum length 8", "Maximum length 100", "Must have uppercase letters",
-                        "Must have lowercase letters", "Must have digits", "Should not have spaces"
-                      ]
-                    });
-                  }
+                
               }
 
         } else {
@@ -164,7 +177,7 @@ const authorizeAndGetUser = async (request, response) => {
 
         // check for basic auth header
         if (!request.headers.authorization || request.headers.authorization.indexOf('Basic ') === -1) {
-            return response.status(401).json({
+            return response.status(403).json({
                 message: 'Missing Authorization Header'
             });
         }
@@ -176,9 +189,15 @@ const authorizeAndGetUser = async (request, response) => {
         const [email, passwordForAuth] = credentials.split(':');
   
         data = await userService.getUser(id);
+        if (!data) {
+            return response.status(404).json({
+                message: 'Invalid user id'
+            });
+        }
+        
         const db_password = data.password;
         if (email != data.username) {
-            return {data: response.status(401).json({
+            return { data: response.status(401).json({
                 message: 'Authorization failed'
             })}; 
         } else {
