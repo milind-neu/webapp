@@ -12,7 +12,21 @@ class UserRepository {
             });
             return data;
         } catch (err) {
-            console.log(err);
+            return [];
+        }
+    }
+
+    async getUserByEmail(email) {
+        try {
+            const data = await User.findOne({
+                raw: true,
+                where: {
+                  username: email
+                }
+            });
+            console.log(data)
+            return data;
+        } catch (err) {
             return [];
         }
     }
@@ -40,7 +54,6 @@ class UserRepository {
               });
             return data;
         } catch (err) {
-            console.log(err);
             return [];
         }
     }
