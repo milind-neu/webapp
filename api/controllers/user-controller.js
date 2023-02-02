@@ -5,12 +5,12 @@ var validator = require("email-validator");
 var passwordValidator = require('password-validator');
 var schema = new passwordValidator();
 schema
-  .is().min(6) // Min password length 8
-  .is().max(100) // Max password length 100
+  .is().min(6) // Min password length should be 6
+  .is().max(100) // Max password length should be 100
   .has().uppercase() // Must contain atleast 1 uppercase letter
   .has().lowercase() // Must contain atleast 1 lowercase letter
   .has().digits() // Must have atleast 1 digit
-  .has().not().spaces();
+  .has().not().spaces(); // Should not contain any spaces
 
     const setErrorResponse = (error, response) => {
         response.status(500);
@@ -48,7 +48,7 @@ schema
         }
 
     } catch (error) {
-        setErrorResponse(error, response);
+        return setErrorResponse(error, response);
     }
 
 }
@@ -93,8 +93,8 @@ const createUser = async (request, response) => {
               } else {
                 return response.status(400).json({
                   message: "Invalid Email or password..!!",
-                  "password_guidelines: ": ["Minimum length 8", "Maximum length 100", "Must have uppercase letters",
-                    "Must have lowercase letters", "Must have digits", "Should not have spaces"
+                  "password_guidelines: ": ["Minimum length should be 6", "Maximum length should be 100", "Must have atleast 1 uppercase letter",
+                    "Must have atleast 1 lowercase letter", "Must have atleast 1 digit", "Should not have any spaces"
                   ]
                 });
               }
@@ -102,7 +102,7 @@ const createUser = async (request, response) => {
 
           
     } catch (error) {
-        setErrorResponse(error, response);
+        return setErrorResponse(error, response);
     }
 
 }
@@ -116,9 +116,22 @@ const updateUser = async (request, response) => {
             });
         }
 
+        if (!request.body.username) {
+            return response.status(400).json({
+                message: "Username field is required"
+            });
+        }
+
         const {passwordValid, data} = await authorizeAndGetUser(request, response)
+
         if (passwordValid) {
 
+            if (request.body.username != data.username) {
+                return response.status(400).json({
+                    message: "Username cannot be modified"
+                });
+            }
+    
             const {
                 firstName,
                 lastName,
@@ -137,8 +150,8 @@ const updateUser = async (request, response) => {
                       } else {
                         return response.status(401).json({
                           message: "Invalid password..!!",
-                          "password_guidelines: ": ["Minimum length 8", "Maximum length 100", "Must have uppercase letters",
-                            "Must have lowercase letters", "Must have digits", "Should not have spaces"
+                          "password_guidelines: ": ["Minimum length should be 6", "Maximum length should be 100", "Must have atleast 1 uppercase letter",
+                          "Must have atleast 1 lowercase letter", "Must have atleast 1 digit", "Should not have any spaces"      
                           ]
                         });
                       }
@@ -146,12 +159,6 @@ const updateUser = async (request, response) => {
                 const updatedUser = await (userService.updateUser(data.id, request.body))
                     const obj = updatedUser[1]
                     return response.status(204).json({
-                        // "Message": obj.id, 
-                        // "first_name": obj.firstName, 
-                        // "last_name": obj.lastName, 
-                        // "username": obj.username, 
-                        // "account_created": obj.createdAt, 
-                        // "account_updated": obj.updatedAt
                     });
                 
               }
@@ -173,7 +180,7 @@ const authorizeAndGetUser = async (request, response) => {
 
         // check for basic auth header
         if (!request.headers.authorization || request.headers.authorization.indexOf('Basic ') === -1) {
-            return response.status(403).json({
+            return response.status(401).json({
                 message: 'Missing Authorization Header'
             });
         }
@@ -183,32 +190,41 @@ const authorizeAndGetUser = async (request, response) => {
         console.log(base64Credentials)
         const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
         const [email, passwordForAuth] = credentials.split(':');
-  
+
         data = await userService.getUser(id);
         if (!data) {
             return response.status(404).json({
                 message: 'Invalid user id'
             });
         }
+
+        const userFromEmail = await userService.getUserByEmail(email);
         
-        const db_password = data.password;
-        if (email != data.username) {
+        if (!userFromEmail) {
             return { data: response.status(401).json({
                 message: 'Authorization failed'
             })}; 
-        } else {
-            const passwordValid = await bcrypt.compare(passwordForAuth, db_password)
+        }
+        
+        const db_password = userFromEmail.password;
+        const passwordValid = await bcrypt.compare(passwordForAuth, db_password)
             if (!passwordValid) {
                 return {data: response.status(401).json({
                     message: 'Authorization failed'
                 })}; 
             } else {
+
+                if (userFromEmail.id != id) {
+                    return {data: response.status(403).json({
+                        message: 'Access denied'
+                    })};
+                }
+
                 return {
                     passwordValid: passwordValid,
                     data: data,
                 }
             }
-        }
 
     } catch (error) {
         return {data: setErrorResponse(error, response)};
