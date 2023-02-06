@@ -14,7 +14,7 @@ describe("Test for healthy server endpoint", () => {
       .get("/healthz")
       .end((err, res) => {
         if (!err) {
-          expect(res.status).to.eql(200);
+          expect(res.status).to.eql(400);
           expect(res.body.message).to.eql("Server is healthy!!!");
           done();
         }
