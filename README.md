@@ -41,4 +41,4 @@
 10. nodemon
 11. should
 12. superters
-13. sequelize
+13. sequelize.
