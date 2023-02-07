@@ -21,11 +21,11 @@ schema
     const setSuccessResponse = (obj, response) => {
         return response.status(201).json({
             "id": obj.id, 
-            "first_name": obj.firstName, 
-            "last_name": obj.lastName, 
+            "first_name": obj.first_name, 
+            "last_name": obj.last_name, 
             "username": obj.username, 
-            "account_created": obj.createdAt, 
-            "account_updated": obj.updatedAt
+            "account_created": obj.account_created, 
+            "account_updated": obj.account_updated
         });
     }
 
@@ -37,11 +37,11 @@ schema
             const obj = data
             return response.status(200).json({
                 "id": obj.id, 
-                "first_name": obj.firstName, 
-                "last_name": obj.lastName, 
+                "first_name": obj.first_name, 
+                "last_name": obj.last_name, 
                 "username": obj.username, 
-                "account_created": obj.createdAt, 
-                "account_updated": obj.updatedAt
+                "account_created": obj.account_created, 
+                "account_updated": obj.account_updated
             });
         } else {
             return data
@@ -56,13 +56,13 @@ schema
 const createUser = async (request, response) => {
     try {
         const {
-            firstName,
-            lastName,
+            first_name,
+            last_name,
             username,
             password
           } = request.body;
         
-          if (!firstName || !lastName || !username || !password) {
+          if (!first_name || !last_name || !username || !password) {
             return response.status(400).json({
                 message: "Field is missing"
               });
@@ -72,8 +72,8 @@ const createUser = async (request, response) => {
                 request.body.password = hashPwd
 
                 const reqUser = {
-                    firstName: firstName,
-                    lastName: lastName,
+                    first_name: first_name,
+                    last_name: last_name,
                     username: username,
                     password: hashPwd
                 }
@@ -133,12 +133,12 @@ const updateUser = async (request, response) => {
             }
     
             const {
-                firstName,
-                lastName,
+                first_name,
+                last_name,
                 password
               } = request.body;
 
-              if (firstName == "" || lastName == "" || password == "") {
+              if (first_name == "" || last_name == "" || password == "") {
                 return response.status(400).json({
                     message: "Field cannot contain null values"
                   });
@@ -178,6 +178,12 @@ const authorizeAndGetUser = async (request, response) => {
 
         const id = request.params.id;
 
+        if(isNaN(id)) {
+            return response.status(400).json({
+                message: 'Invalid id provided'
+            });
+        }
+
         // check for basic auth header
         if (!request.headers.authorization || request.headers.authorization.indexOf('Basic ') === -1) {
             return response.status(401).json({
@@ -194,7 +200,7 @@ const authorizeAndGetUser = async (request, response) => {
         data = await userService.getUser(id);
         if (!data) {
             return response.status(404).json({
-                message: 'Invalid user id'
+                message: 'User not found'
             });
         }
 
