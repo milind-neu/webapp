@@ -9,12 +9,12 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      firstName: {
+      first_name: {
         allowNull: false,
         notEmpty: true,
         type: Sequelize.STRING
       },
-      lastName: {
+      last_name: {
         allowNull: false,
         notEmpty: true,
         type: Sequelize.STRING
@@ -30,11 +30,11 @@ module.exports = {
         notEmpty: true,
         type: Sequelize.STRING
       },
-      createdAt: {
+      account_created: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      account_updated: {
         allowNull: false,
         type: Sequelize.DATE
       }

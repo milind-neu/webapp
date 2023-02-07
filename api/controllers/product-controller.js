@@ -6,6 +6,13 @@ const getProduct = async (request, response) => {
     try {
 
         const id = request.params.id;
+
+        if(isNaN(id)) {
+            return response.status(400).json({
+                message: 'Invalid id provided'
+            });
+        }
+        
         const product = await (productService.getProduct(id))
 
         if (product) {
@@ -118,6 +125,12 @@ const updateProduct = async (request, response) => {
 
             const id = request.params.id;
 
+            if(isNaN(id)) {
+                return response.status(400).json({
+                    message: 'Invalid id provided'
+                });
+            }
+
             const {
                 name,
                 description,
@@ -191,6 +204,13 @@ const deleteProduct = async (request, response) => {
         if (passwordValid) {
 
             const id = request.params.id;
+
+            if(isNaN(id)) {
+                return response.status(400).json({
+                    message: 'Invalid id provided'
+                });
+            }
+
             const product = await (productService.getProduct(id));
 
             if (!product) {
