@@ -2,11 +2,13 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS citext;');
     await queryInterface.createTable('Users', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
+        readOnly: true,
         type: Sequelize.INTEGER
       },
       first_name: {
@@ -23,7 +25,7 @@ module.exports = {
         allowNull: false,
         unique: true,
         notEmpty: true,
-        type: Sequelize.STRING
+        type: Sequelize.CITEXT
       },
       password: {
         allowNull: false,
@@ -32,10 +34,12 @@ module.exports = {
       },
       account_created: {
         allowNull: false,
+        readOnly: true,
         type: Sequelize.DATE
       },
       account_updated: {
         allowNull: false,
+        readOnly: true,
         type: Sequelize.DATE
       }
     });
