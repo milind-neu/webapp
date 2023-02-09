@@ -14,8 +14,8 @@
 
 1. Clone the forked repository `git@github.com:milind-neu/webapp.git` 
 2. Configure `.env` with your database details
-3. Run `db-migrate` using `npx sequelize-cli db:migrate`
-4. Run `npm install` to install deps
+3. Run `npm install` to install deps
+4. Run `db-migrate` using `npx sequelize-cli db:migrate`
 5. Run the app using `npm start`
 6. Go to Postman and run all apis like `healthz`, `getUser`, `createUser` and `updateUser`
 
