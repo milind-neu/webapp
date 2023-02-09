@@ -40,6 +40,13 @@ const getProduct = async (request, response) => {
 
 const createProduct = async (request, response) => {
     try {
+
+        if (request.body.id || request.body.date_added || request.body.date_last_updated || request.body.owner_user_id) {
+            return response.status(400).json({
+                message: "Bad request"
+            });
+        }
+
         const {
             name,
             description,
@@ -73,7 +80,7 @@ const createProduct = async (request, response) => {
             if (createdProduct.hasOwnProperty("err")) {
                 if (createdProduct["err"].name === 'SequelizeValidationError') {
                     return response.status(400).json({
-                      msg: createdProduct["err"].errors.map(e => e.message)
+                      message: createdProduct["err"].errors.map(e => e.message)
                     })
                   } else {
                     if (createdProduct["err"].original.constraint == "Products_sku_key") {
@@ -168,7 +175,7 @@ const updateProduct = async (request, response) => {
             if (updatedProduct.hasOwnProperty("err")) {
                 if (updatedProduct["err"].name === 'SequelizeValidationError') {
                     return response.status(400).json({
-                      msg: updatedProduct["err"].errors.map(e => e.message)
+                        message: updatedProduct["err"].errors.map(e => e.message)
                     })
                   } else {
                     if (updatedProduct["err"].original.constraint == "Products_sku_key") {
