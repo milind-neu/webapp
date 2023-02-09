@@ -57,6 +57,11 @@ const createProduct = async (request, response) => {
             quantity: quantity
         }
 
+        if (quantity && typeof quantity != "number") {
+            return response.status(400).json({
+                message: 'Quantity should be a number'
+            });
+        }
             const {passwordValid, data} = await authorizeAndGetUser(request, response)
             if (passwordValid) {
                 product["owner_user_id"] = data.id
@@ -64,12 +69,10 @@ const createProduct = async (request, response) => {
                 return data
             }
             const createdProduct = await (productService.createProduct(product))
-            // console.log(data)
             
             if (createdProduct.hasOwnProperty("err")) {
                 if (createdProduct["err"].name === 'SequelizeValidationError') {
                     return response.status(400).json({
-                      success: false,
                       msg: createdProduct["err"].errors.map(e => e.message)
                     })
                   } else {
@@ -84,11 +87,6 @@ const createProduct = async (request, response) => {
                     }
                 }
 
-                // if (createdProduct["err"].original.constraint == "Products_sku_key") {
-                //     return response.status(400).json({
-                //         message: "Product with given sku already exists"
-                //     });
-                // }
             } else {
                 return response.status(201).json({
                     "id": createdProduct.id,
@@ -138,9 +136,8 @@ const updateProduct = async (request, response) => {
                 manufacturer,
                 quantity
               } = request.body;
-    
-    
-              const product = {
+
+            const product = {
                 name: name,
                 description: description,
                 sku: sku,
@@ -148,6 +145,11 @@ const updateProduct = async (request, response) => {
                 quantity: quantity
             }
 
+            if (quantity && typeof quantity != "number") {
+                return response.status(400).json({
+                    message: 'Quantity should be a number'
+                });
+            }
             const previousProduct = await (productService.getProduct(id));
 
             if (!previousProduct) {
@@ -166,7 +168,6 @@ const updateProduct = async (request, response) => {
             if (updatedProduct.hasOwnProperty("err")) {
                 if (updatedProduct["err"].name === 'SequelizeValidationError') {
                     return response.status(400).json({
-                      success: false,
                       msg: updatedProduct["err"].errors.map(e => e.message)
                     })
                   } else {
@@ -189,6 +190,30 @@ const updateProduct = async (request, response) => {
         } else {
             return data
         }
+
+    } catch (error) {
+        return setErrorResponse(error, response);
+    }
+
+}
+
+const updateProductForPut = async (request, response) => {
+    try {
+
+        const {
+            name,
+            description,
+            sku,
+            manufacturer,
+            quantity
+          } = request.body;
+
+        if (!name || !description || !sku || !manufacturer || !quantity) {
+            return response.status(400).json({
+                message: "Bad request"
+            });
+        }
+        return updateProduct(request, response);
 
     } catch (error) {
         return setErrorResponse(error, response);
@@ -299,5 +324,6 @@ module.exports = {
     getProduct,
     createProduct,
     updateProduct,
+    updateProductForPut,
     deleteProduct
 }

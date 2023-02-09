@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING
     },
     sku: {
-        validate: {
+      validate: {
           notEmpty: {
             args: true,
             msg: "Sku cannot be empty"

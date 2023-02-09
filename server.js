@@ -22,7 +22,8 @@ app.put('/v1/user/:id', userController.updateUser)
 
 app.get('/v1/product/:id', productController.getProduct)
 app.post('/v1/product', productController.createProduct)
-app.put('/v1/product/:id', productController.updateProduct)
+app.patch('/v1/product/:id', productController.updateProduct)
+app.put('/v1/product/:id', productController.updateProductForPut)
 app.delete('/v1/product/:id', productController.deleteProduct)
 
 module.exports = app.listen(port, () => {
