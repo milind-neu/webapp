@@ -2,49 +2,50 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS citext;');
-    await queryInterface.createTable('Users', {
+    await queryInterface.createTable('Products', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        readOnly: true,
         type: Sequelize.INTEGER
       },
-      first_name: {
+      name: {
         allowNull: false,
-        notEmpty: true,
+        type: Sequelize.STRING,
+      },
+      description: {
+        allowNull: false,
         type: Sequelize.STRING
       },
-      last_name: {
-        allowNull: false,
-        notEmpty: true,
-        type: Sequelize.STRING
-      },
-      username: {
+      sku: {
         allowNull: false,
         unique: true,
-        notEmpty: true,
-        type: Sequelize.CITEXT
-      },
-      password: {
-        allowNull: false,
-        notEmpty: true,
         type: Sequelize.STRING
       },
-      account_created: {
+      manufacturer: {
         allowNull: false,
-        readOnly: true,
+        type: Sequelize.STRING
+      },
+      quantity: {
+        allowNull: false,
+        type: Sequelize.INTEGER
+      },
+      date_added: {
+        allowNull: false,
         type: Sequelize.DATE
       },
-      account_updated: {
+      date_last_updated: {
         allowNull: false,
-        readOnly: true,
         type: Sequelize.DATE
-      }
+      },
+      owner_user_id : {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: { model: 'Users', key: 'id' }
+    }
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Users');
+    await queryInterface.dropTable('Products');
   }
 };
