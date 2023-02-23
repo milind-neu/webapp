@@ -28,7 +28,7 @@ jobs:
         run: npm install
 
       - name: Run Tests
-        run: npm Test
+        run: npm test
 
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
