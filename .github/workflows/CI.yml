@@ -54,8 +54,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::084727156493:user/packer_iam_dev
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: AKIARHORBZ4G23PHXN5B
+          aws-secret-access-key: 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
           aws-region: us-east-1
       
       - name: Download Artifacts
