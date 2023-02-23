@@ -10,7 +10,7 @@ packer {
 variable "aws-access-key-id" {
   type        = string
   description = "Packer IAM User Access Key"
-  default     = env("aws-access-key-id") 
+  default     = env("aws-access-key-id")
 }
 
 variable "aws-secret-access-key" {
@@ -21,7 +21,6 @@ variable "aws-secret-access-key" {
 
 source "amazon-ebs" "ami-amazon-linux-2" {
 
-  ami_name      = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_users     = var.ami_users
   instance_type = var.ami_instance_type
   region        = var.aws_region
@@ -35,8 +34,9 @@ source "amazon-ebs" "ami-amazon-linux-2" {
 
   // profile 		  = "${var.aws_profile}"
   access_key = var.aws-access-key-id
-  secret_key = "${var.aws-secret-access-key}"
+  secret_key = var.aws-secret-access-key
 
+  ami_name      = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_description = "CSYE6225 - Cloud - Assignment 04 - Amazon Linux 2 AMI"
 
   aws_polling {
