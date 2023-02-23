@@ -16,8 +16,7 @@ source "amazon-ebs" "ami-amazon-linux-2" {
   ssh_username  = var.ssh_username
 
   tags = {
-    Name        = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
-    Environment = var.ami_environment
+    Name = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   }
 
   // profile 		  = "${var.aws_profile}"
@@ -34,9 +33,9 @@ source "amazon-ebs" "ami-amazon-linux-2" {
 
   launch_block_device_mappings {
     delete_on_termination = true
-    device_name           = "/dev/xvda"
-    volume_size           = 8
-    volume_type           = "gp2"
+    device_name           = var.volume_name
+    volume_size           = var.volume_size
+    volume_type           = var.volume_type
   }
 }
 

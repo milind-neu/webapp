@@ -26,10 +26,6 @@ variable "ssh_username" {
   type = string
 }
 
-variable "ami_environment" {
-  type = string
-}
-
 variable "ami_users" {
   type = list(string)
 }
@@ -61,4 +57,19 @@ variable "PASSWORD" {
 variable "DIALECT" {
   type    = string
   default = env("DIALECT")
+}
+
+variable "volume_size" {
+  type        = number
+  description = "Volume size"
+}
+
+variable "volume_type" {
+  type        = string
+  description = "Volume type"
+}
+
+variable "volume_name" {
+  type        = string
+  description = "Volume Name"
 }
