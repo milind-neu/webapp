@@ -19,12 +19,12 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-      - name: Use Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '12.x'
 
-      - name: Install Dependencies
+      - name: Install All Dependencies
         run: npm install
 
       - name: Run Tests
@@ -53,6 +53,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
+          role-to-assume: arn:aws:iam::084727156493:user/packer_iam_dev
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
