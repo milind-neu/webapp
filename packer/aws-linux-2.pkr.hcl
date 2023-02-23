@@ -46,12 +46,12 @@ build {
   ]
 
   provisioner "file" {
-    sources     = ["./packer/default.conf", "/home/runner/work/webapp/webapp/release.zip", "./packer/pg_hba.conf"]
+    sources     = var.sources_to_configure
     destination = "/tmp/"
   }
 
   provisioner "shell" {
-    scripts          = ["./packer/config_env_webapp.sh"]
+    scripts          = var.shell_script
     environment_vars = ["DB_USER=${var.DB_USER}", "PASSWORD=${var.PASSWORD}", "HOST=${var.HOST}", "DB=${var.DB}", "DIALECT=${var.DIALECT}"]
   }
 }
