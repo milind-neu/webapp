@@ -6,18 +6,6 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
-variable "aws-access-key-id" {
-  type        = string
-  description = "Packer IAM User Access Key"
-  default     = env("aws-access-key-id")
-}
-
-variable "aws-secret-access-key" {
-  type        = string
-  description = "Packer IAM User Secret Key"
-  default     = env("aws-secret-access-key")
-}
-
 // variable "ami_name" {
 //   type    = string
 // }

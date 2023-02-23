@@ -7,6 +7,18 @@ packer {
   }
 }
 
+variable "aws-access-key-id" {
+  type        = string
+  description = "Packer IAM User Access Key"
+  default     = env("aws-access-key-id")
+}
+
+variable "aws-secret-access-key" {
+  type        = string
+  description = "Packer IAM User Secret Key"
+  default     = env("aws-secret-access-key")
+}
+
 source "amazon-ebs" "ami-amazon-linux-2" {
 
   ami_name      = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
