@@ -53,6 +53,7 @@ export HOST=${HOST}
 export DB_USER=${DB_USER}
 export DB=${DB}
 export PASSWORD=${PASSWORD}
+export DIALECT=${DIALECT}
 EOT
 
 # Install pm2 to setup autorun

@@ -40,20 +40,25 @@ variable "ami_instance_type" {
 
 variable "DB_USER" {
   type    = string
-  default = "admin"
+  default = env("DB_USER")
 }
 
 variable "HOST" {
   type    = string
-  default = "localhost"
+  default = env("HOST")
 }
 
 variable "DB" {
   type    = string
-  default = "webapp"
+  default = env("DB")
 }
 
 variable "PASSWORD" {
   type    = string
-  default = "Boylston@1185"
+  default = env("PASSWORD")
+}
+
+variable "DIALECT" {
+  type    = string
+  default = env("DIALECT")
 }
