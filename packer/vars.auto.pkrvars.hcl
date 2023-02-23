@@ -11,3 +11,6 @@ ami_instance_type = "t2.micro"
 volume_size = 8
 volume_type = "gp2"
 volume_name = "/dev/xvda"
+
+sources_to_configure = ["./packer/default.conf", "/home/runner/work/webapp/webapp/release.zip", "./packer/pg_hba.conf"]
+shell_script         = ["./packer/config_env_webapp.sh"]

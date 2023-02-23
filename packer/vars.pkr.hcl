@@ -14,7 +14,7 @@ variable "aws-access-key-id" {
 
 variable "aws-secret-access-key" {
   type        = string
-  description = "Packer IAM User Secret Key"
+  description = "Packer IAM User Access Secret Key"
   default     = env("aws-secret-access-key")
 }
 
@@ -72,4 +72,12 @@ variable "volume_type" {
 variable "volume_name" {
   type        = string
   description = "Volume Name"
+}
+
+variable "sources_to_configure" {
+  type = list(string)
+}
+
+variable "shell_script" {
+  type = list(string)
 }
