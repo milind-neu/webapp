@@ -55,11 +55,6 @@ export DB=${DB}
 export PASSWORD=${PASSWORD}
 EOT
 
-unzip /tmp/webapp.zip -d /home/ec2-user/
-cd /home/ec2-user/webapp
-npm i
-npx sequelize-cli db:migrate
-
 # Install pm2 to setup autorun
 npm install pm2@latest -g
 pm2 startup
@@ -74,6 +69,7 @@ unzip /tmp/release.zip -d /home/ec2-user/webapp
 # Installing dependencies
 cd /home/ec2-user/webapp
 npm install
+npx sequelize-cli db:migrate
 
 # Run webapp as a background process
 pm2 start server.js
