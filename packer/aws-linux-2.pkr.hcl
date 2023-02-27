@@ -54,3 +54,4 @@ build {
     scripts          = var.shell_script
     environment_vars = ["DB_USER=${var.DB_USER}", "PASSWORD=${var.PASSWORD}", "HOST=${var.HOST}", "DB=${var.DB}", "DIALECT=${var.DIALECT}"]
   }
+}
