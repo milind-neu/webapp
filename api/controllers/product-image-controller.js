@@ -6,35 +6,9 @@ const { v4: uuidv4 } = require("uuid");
 const productController  = require('../controllers/product-controller.js');
 const productImageService  = require('../services/product-image-service.js');
 
+const s3 = require('./s3-config').s3;
+
 const storage = multer.memoryStorage();
-
-aws.config.update({
-  region: "us-east-1"
-});
-
-// const s3 = new aws.S3({
-//   signatureVersion: "v4",
-//   region: "us-east-1",
-// });
-
-// s3.listBuckets((err, data) => {
-//   if (err) {
-//     console.log("Error", err);
-//   } else {
-//     console.log("Success", data.Buckets);
-//   }
-// });
-
-const S3_BUCKET = "csye6225-4f0cfd2ce8b941a7";
-// const multerStorage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "./public/images");
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, `image-${Date.now()}` + path.extname(file.originalname));
-//     //path.extname get the uploaded file extension
-//   },
-// });
 const multerFilter = (req, file, cb) => {
   if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
     // upload only png, jpg, or jpeg format
@@ -49,11 +23,10 @@ const upload = multer({
 });
 
 const uploadToS3 = async (key, buffer, mimetype) => {
-  console.log('uploadToS3().......')
   return new Promise((resolve, reject) => {
     s3.putObject(
       {
-        Bucket: S3_BUCKET,
+        Bucket: process.env.S3_BUCKET_NAME,
         ContentType: mimetype,
         Key: key,
         Body: buffer,
@@ -119,8 +92,6 @@ const uploadImage = async (request, response) => {
       request,
       response
     );
-    console.log("AAAAAAA")
-    console.log(result.product)
     if (!result.product) {
       return {result};
     } else {
@@ -137,7 +108,7 @@ const uploadImage = async (request, response) => {
         file_name: request.body.file,
         image_id: imageId,
         product_id: result.product.id,
-        s3_bucket_path: "AAA",
+        s3_bucket_path: s3_image_url,
       };
       const data = await productImageService.uploadImage(payload);
       return setSuccessResponse(data, response);
@@ -201,7 +172,7 @@ const deleteImage = async (request, response) => {
             message: "Image not found!"
           });
         } else {
-          await deleteS3Object(S3_BUCKET, `Product ${result.product.id}/${image.image_id}`);
+          await deleteS3Object(process.env.S3_BUCKET_NAME, `Product ${result.product.id}/${image.image_id}`);
           const res = await productImageService.deleteImage(imageId);
           return response.status(204).send();
         }

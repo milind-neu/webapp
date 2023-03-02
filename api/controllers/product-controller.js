@@ -2,6 +2,7 @@ const productService = require('../services/product-service');
 const userService = require('../services/user-service');
 const productImagesService = require('../services/product-image-service');
 const bcrypt = require("bcrypt");
+const s3 = require('./s3-config').s3;
 
 const deleteS3Directory = async (bucketName, directoryKey) => {
     try {
@@ -9,17 +10,22 @@ const deleteS3Directory = async (bucketName, directoryKey) => {
         Bucket: bucketName,
         Prefix: directoryKey,
       };
+
       const listedObjects = await s3.listObjectsV2(listParams).promise();
       const deleteParams = {
         Bucket: bucketName,
         Delete: { Objects: [] },
       };
+
       listedObjects.Contents.forEach(({ Key }) => {
         deleteParams.Delete.Objects.push({ Key });
       });
+
       await s3.deleteObjects(deleteParams).promise();
       return true;
+
     } catch (err) {
+        
       console.error(err);
       return false;
     }

@@ -34,31 +34,6 @@ variable "ami_instance_type" {
   type = string
 }
 
-variable "DB_USER" {
-  type    = string
-  default = env("DB_USER")
-}
-
-variable "HOST" {
-  type    = string
-  default = env("HOST")
-}
-
-variable "DB" {
-  type    = string
-  default = env("DB")
-}
-
-variable "PASSWORD" {
-  type    = string
-  default = env("PASSWORD")
-}
-
-variable "DIALECT" {
-  type    = string
-  default = env("DIALECT")
-}
-
 variable "volume_size" {
   type        = number
   description = "Volume size"
