@@ -12,5 +12,5 @@ volume_size = 8
 volume_type = "gp2"
 volume_name = "/dev/xvda"
 
-sources_to_configure = ["./packer/default.conf", "/home/runner/work/webapp/webapp/release.zip", "./packer/pg_hba.conf"]
+sources_to_configure = ["./packer/default.conf", "/home/runner/work/webapp/webapp/release.zip"]
 shell_script         = ["./packer/config_env_webapp.sh"]

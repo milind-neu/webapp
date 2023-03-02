@@ -1,9 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const userController = require('./api/controllers/user-controller')
 const productController = require('./api/controllers/product-controller')
+const productImageController = require('./api/controllers/product-image-controller')
 
 const app = express();
 const port = 3000;
@@ -25,6 +25,10 @@ app.post('/v1/product', productController.createProduct)
 app.patch('/v1/product/:id', productController.updateProduct)
 app.put('/v1/product/:id', productController.updateProductForPut)
 app.delete('/v1/product/:id', productController.deleteProduct)
+
+app.post('/v1/product/:id/image', productImageController.upload.single('fileType'), productImageController.uploadImage)
+app.get('/v1/product/:id/image', productImageController.getImagesList)
+app.delete('/v1/product/:id/image/:imageId', productImageController.deleteImage)
 
 module.exports = app.listen(port, () => {
     console.log(`Server listening on the port  ${port}`);

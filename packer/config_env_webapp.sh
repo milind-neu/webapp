@@ -2,26 +2,7 @@
 sudo yum update -y
 
 # Install PostgreSQL
-sudo yum install postgresql-contrib -y
-sudo amazon-linux-extras enable postgresql14
-sudo yum install postgresql-server -y
-
-# Initialize DB
-sudo postgresql-setup initdb
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
-echo "==> Checking the postgresql status"
-sudo systemctl status postgresql
-
-# Setup database
-# Create a new PostgreSQL database and user
-sudo -u postgres psql -c "CREATE DATABASE ${DB};"
-sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '${PASSWORD}';"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB} TO ${DB_USER};"
-
-sudo mv -f /tmp/pg_hba.conf /var/lib/pgsql/data/pg_hba.conf
-sudo systemctl restart postgresql
+sudo amazon-linux-extras install postgresql14
 
 # Install Nginx
 sudo amazon-linux-extras install nginx1
@@ -48,14 +29,6 @@ echo "==> Print binary paths"
 which node
 which npm
 
-cat <<EOT >> ~/.bash_profile
-export HOST=${HOST}
-export DB_USER=${DB_USER}
-export DB=${DB}
-export PASSWORD=${PASSWORD}
-export DIALECT=${DIALECT}
-EOT
-
 # Install pm2 to setup autorun
 npm install pm2@latest -g
 pm2 startup
@@ -70,8 +43,7 @@ unzip /tmp/release.zip -d /home/ec2-user/webapp
 # Installing dependencies
 cd /home/ec2-user/webapp
 npm install
-npx sequelize-cli db:migrate
 
 # Run webapp as a background process
-pm2 start server.js
+pm2 start npm --name "webapp" -- run "start"
 pm2 save
