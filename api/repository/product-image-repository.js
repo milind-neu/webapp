@@ -10,9 +10,9 @@ class ProductImageRepository {
         
             return {
               image_id: data.id,
-              product_id: data.product_id,
               file_name: data.file_name,
               date_created: data.date_created,
+              product_id: data.product_id,
               s3_bucket_path: data.s3_bucket_path,
             };
           } catch (err) {
