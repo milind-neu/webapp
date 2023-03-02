@@ -19,7 +19,7 @@ source "amazon-ebs" "ami-amazon-linux-2" {
     Name = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   }
 
-  // profile 		  = "${var.aws_profile}"
+  // profile = "${var.aws_profile}"
   access_key = var.aws-access-key-id
   secret_key = var.aws-secret-access-key
 

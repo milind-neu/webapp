@@ -1,6 +1,29 @@
 const productService = require('../services/product-service');
 const userService = require('../services/user-service');
+const productImagesService = require('../services/product-image-service');
 const bcrypt = require("bcrypt");
+
+const deleteS3Directory = async (bucketName, directoryKey) => {
+    try {
+      const listParams = {
+        Bucket: bucketName,
+        Prefix: directoryKey,
+      };
+      const listedObjects = await s3.listObjectsV2(listParams).promise();
+      const deleteParams = {
+        Bucket: bucketName,
+        Delete: { Objects: [] },
+      };
+      listedObjects.Contents.forEach(({ Key }) => {
+        deleteParams.Delete.Objects.push({ Key });
+      });
+      await s3.deleteObjects(deleteParams).promise();
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
 
 const getProduct = async (request, response) => {
     try {
@@ -244,7 +267,6 @@ const deleteProduct = async (request, response) => {
             }
 
             const product = await (productService.getProduct(id));
-
             if (!product) {
                 return response.status(404).json({
                     message: 'Product not found'
@@ -257,6 +279,11 @@ const deleteProduct = async (request, response) => {
                 })};
             }
 
+            const images = await (productImagesService.getImagesByProduct(id));
+
+            await (deleteS3Directory(process.env.S3_BUCKET_NAME, `Product ${id}/`));
+            await Promise.all(images.map((image) => productImagesService.deleteImage(image.id)));
+            
             const deleteData = await (productService.deleteProduct(id));
             console.log("DeletedData = ", deleteData);
             if (deleteData.hasOwnProperty("err")) {
@@ -321,6 +348,46 @@ const authorizeAndGetUser = async (request, response) => {
 
 }
 
+const getProductByUser = async (request, response) => {
+    try {
+
+        const productId = request.params.id;
+  
+        if (isNaN(productId)) {
+          return response.status(400).send({
+            message: "Invalid Product ID",
+          });
+        }
+      
+    
+      const {passwordValid, data} = await authorizeAndGetUser(request, response)
+            if (passwordValid) {
+                const product = await productService.getProduct(productId);
+                if (!product) {
+
+                    return { data: response.status(404).json({
+                        message: 'Product not found'
+                    })}; 
+                
+                } else if (product.owner_user_id != data.id) {
+                    return { data: response.status(403).json({
+                        message: 'Access denied'
+                    })}; 
+                
+                } else {
+                    return { 
+                        product
+                    };
+                    
+                }
+            } else {
+                return {data};
+            }
+    } catch (error) {
+      return {data: setErrorResponse(error, response)};
+    }
+  };
+
 const setErrorResponse = (error, response) => {
     response.status(500);
     response.json(error);
@@ -332,5 +399,6 @@ module.exports = {
     createProduct,
     updateProduct,
     updateProductForPut,
-    deleteProduct
+    deleteProduct,
+    getProductByUser
 }
