@@ -1,4 +1,4 @@
-# CSYE 6225 - Spring 2023
+# CSYE 6225 - Spring 2023 - Cloud
 
 ## Personal Information
 
@@ -13,7 +13,7 @@
 ## Build Instructions
 
 1. Clone the forked repository `git@github.com:milind-neu/webapp.git` 
-2. Configure `.env` with your database details
+2. Configure `.env` with your database details.
 3. Run `npm install` to install deps
 4. Run `db-migrate` using `npx sequelize-cli db:migrate`
 5. Run the app using `npm start`
