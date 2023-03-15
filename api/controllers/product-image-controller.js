@@ -149,6 +149,44 @@ const getImagesList = async (request, response) => {
   }
 };
 
+const getImage = async (request, response) => {
+  const productId = request.params.id;
+  const imageId = request.params.imageId;
+
+  if (!productId || !imageId) {
+    return response.status(400).send({
+      message: "Bad Request"
+    });
+  } else {
+    try {
+      const result = await productController.getProductByUser(
+        request,
+        response
+      );
+      if (!result.product) {
+        return result;
+      } else {
+        const image = await productImageService.getImageById(imageId);
+        if (!image) {
+          return response.status(404).send({
+            message: "Image not found!"
+          });
+        } else {
+          return response.status(200).send({
+              image_id: image.dataValues.image_id,
+              product_id: image.dataValues.product_id,
+              file_name: image.dataValues.file_name,
+              date_created: image.dataValues.date_created,
+              s3_bucket_path: image.dataValues.s3_bucket_path
+          });
+        }
+      }
+    } catch (error) {
+        return {data: setErrorResponse(error, response)};
+    }
+  }
+}
+
 const deleteImage = async (request, response) => {
   const productId = request.params.id;
   const imageId = request.params.imageId;
@@ -187,5 +225,6 @@ module.exports = {
     upload,
     uploadImage,
     getImagesList,
+    getImage,
     deleteImage
 }
