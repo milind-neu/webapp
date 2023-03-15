@@ -29,6 +29,7 @@ app.delete('/v1/product/:id', productController.deleteProduct)
 app.post('/v1/product/:id/image', productImageController.upload.single('fileType'), productImageController.uploadImage)
 app.get('/v1/product/:id/image', productImageController.getImagesList)
 app.delete('/v1/product/:id/image/:imageId', productImageController.deleteImage)
+app.get('/v1/product/:id/image/:imageId', productImageController.getImage)
 
 module.exports = app.listen(port, () => {
     console.log(`Server listening on the port  ${port}`);
