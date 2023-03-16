@@ -40,13 +40,14 @@ class ProductImageRepository {
         return data;
     };
 
-    async getImageById(id) {
+    async getImageById(id, productId) {
         let data = {};
         try {
             data = await Image.findOne({
             raw: true,
             where: {
                 id: id,
+                product_id: productId
             },
             });
         } catch (err) {

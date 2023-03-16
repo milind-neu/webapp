@@ -166,18 +166,18 @@ const getImage = async (request, response) => {
       if (!result.product) {
         return result;
       } else {
-        const image = await productImageService.getImageById(imageId);
+        const image = await productImageService.getImageById(imageId, productId);
         if (!image) {
           return response.status(404).send({
             message: "Image not found!"
           });
         } else {
           return response.status(200).send({
-              image_id: image.dataValues.image_id,
-              product_id: image.dataValues.product_id,
-              file_name: image.dataValues.file_name,
-              date_created: image.dataValues.date_created,
-              s3_bucket_path: image.dataValues.s3_bucket_path
+              image_id: image.image_id,
+              product_id: image.product_id,
+              file_name: image.file_name,
+              date_created: image.date_created,
+              s3_bucket_path: image.s3_bucket_path
           });
         }
       }
@@ -204,7 +204,7 @@ const deleteImage = async (request, response) => {
       if (!result.product) {
         return result;
       } else {
-        const image = await productImageService.getImageById(imageId);
+        const image = await productImageService.getImageById(imageId, productId);
         if (!image) {
           return response.status(404).send({
             message: "Image not found!"

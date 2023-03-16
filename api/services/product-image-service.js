@@ -12,8 +12,8 @@ class ProductImageService {
         return await productImageRepository.getImagesByProduct(productId);
     }
 
-    async getImageById(id) {
-        return await productImageRepository.getImageById(id);
+    async getImageById(id, productId) {
+        return await productImageRepository.getImageById(id, productId);
     }
 
     async deleteImage(id) {
