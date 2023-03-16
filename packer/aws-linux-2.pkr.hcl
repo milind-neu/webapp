@@ -24,7 +24,7 @@ source "amazon-ebs" "ami-amazon-linux-2" {
   secret_key = var.aws-secret-access-key
 
   ami_name        = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
-  ami_description = "CSYE6225 - Cloud - Assignment 04 - Amazon Linux 2 AMI"
+  ami_description = "CSYE6225 - Cloud - Amazon Linux 2 AMI"
 
   aws_polling {
     delay_seconds = 120
