@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 const userController = require('./api/controllers/user-controller')
 const productController = require('./api/controllers/product-controller')
 const productImageController = require('./api/controllers/product-image-controller')
+const statsd_config = require('./statsd_config');
+
+const logger = require('./logger');
 
 const app = express();
 const port = 3000;
@@ -11,6 +14,8 @@ const port = 3000;
 app.use(bodyParser.json());
 
 app.get('/healthz', (req, res) => {
+    statsd_config.statsd.increment('api.healthz.count');
+
     return res.status(200).json({
         message: "Server is healthy!!!"
       });
@@ -33,4 +38,5 @@ app.get('/v1/product/:id/image/:imageId', productImageController.getImage)
 
 module.exports = app.listen(port, () => {
     console.log(`Server listening on the port  ${port}`);
+    logger.info(`Server is running at ${port}.`);
 })

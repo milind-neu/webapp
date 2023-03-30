@@ -32,13 +32,15 @@ which npm
 # Install pm2 to setup autorun
 npm install pm2@latest -g
 pm2 startup
-sudo env PATH=$PATH:/home/ec2-user/.nvm/versions/node/v16.19.1/bin /home/ec2-user/.nvm/versions/node/v16.19.1/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
+sudo env PATH=$PATH:/home/ec2-user/.nvm/versions/node/v16*/bin /home/ec2-user/.nvm/versions/node/v16*/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
 sudo systemctl enable pm2-ec2-user
 sudo systemctl start pm2-ec2-user
 sudo systemctl status pm2-ec2-user
 
 # Unzip the source code for webapp
 unzip /tmp/release.zip -d /home/ec2-user/webapp
+
+sudo mv /tmp/cloudwatch_config.json /opt/cloudwatch_config.json
 
 # Installing dependencies
 cd /home/ec2-user/webapp
