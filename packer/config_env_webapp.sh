@@ -20,7 +20,7 @@ sudo systemctl status nginx
 # Install Node.js and NPM
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 . ~/.nvm/nvm.sh
-nvm install 16
+nvm install 16.19.1
 node -e "console.log('Running Node.js ' + process.version)"
 
 echo "==> Checking for npm version"
@@ -32,7 +32,7 @@ which npm
 # Install pm2 to setup autorun
 npm install pm2@latest -g
 pm2 startup
-sudo env PATH=$PATH:/home/ec2-user/.nvm/versions/node/v16*/bin /home/ec2-user/.nvm/versions/node/v16*/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
+sudo env PATH=$PATH:/home/ec2-user/.nvm/versions/node/v16.19.1/bin /home/ec2-user/.nvm/versions/node/v16.19.1/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
 sudo systemctl enable pm2-ec2-user
 sudo systemctl start pm2-ec2-user
 sudo systemctl status pm2-ec2-user
