@@ -3,6 +3,8 @@ const userService = require('../services/user-service');
 const productImagesService = require('../services/product-image-service');
 const bcrypt = require("bcrypt");
 const s3 = require('./s3-config').s3;
+const statsd_config = require('../../statsd_config');
+const logError = require('../../log_error')
 
 const deleteS3Directory = async (bucketName, directoryKey) => {
     try {
@@ -32,19 +34,23 @@ const deleteS3Directory = async (bucketName, directoryKey) => {
   };
 
 const getProduct = async (request, response) => {
+    statsd_config.statsd.increment('api.product.http.get.count');
+
     try {
 
         const id = request.params.id;
 
         if(isNaN(id)) {
-            return response.status(400).json({
-                message: 'Invalid id provided'
-            });
+            return logError.setAndLogError(400, "Invalid id provided", response)
+            // return response.status(400).json({
+            //     message: 'Invalid id provided'
+            // });
         }
         
         const product = await (productService.getProduct(id))
 
         if (product) {
+            logger.info(`200: Product retrieved with id: ${product.id}`);
             return response.status(200).json({
                 "id": product.id, 
                 "name": product.name, 
@@ -57,9 +63,10 @@ const getProduct = async (request, response) => {
                 "owner_user_id": product.owner_user_id
             });
         } else {
-            return response.status(404).json({
-                message: 'Product not found'
-            });
+            return logError.setAndLogError(404, "Product not found", response)
+            // return response.status(404).json({
+            //     message: 'Product not found'
+            // });
         }
 
     } catch (error) {
@@ -68,12 +75,14 @@ const getProduct = async (request, response) => {
 }
 
 const createProduct = async (request, response) => {
+    statsd_config.statsd.increment('api.product.http.post.count');
     try {
 
         if (request.body.id || request.body.date_added || request.body.date_last_updated || request.body.owner_user_id) {
-            return response.status(400).json({
-                message: "Bad request"
-            });
+            return logError.setAndLogError(400, "Bad request", response)
+            // return response.status(400).json({
+            //     message: "Bad request"
+            // });
         }
 
         const {
@@ -94,9 +103,10 @@ const createProduct = async (request, response) => {
         }
 
         if (quantity && typeof quantity != "number") {
-            return response.status(400).json({
-                message: 'Quantity should be a number'
-            });
+            return logError.setAndLogError(400, "Quantity should be a number", response)
+            // return response.status(400).json({
+            //     message: 'Quantity should be a number'
+            // });
         }
             const {passwordValid, data} = await authorizeAndGetUser(request, response)
             if (passwordValid) {
@@ -108,22 +118,26 @@ const createProduct = async (request, response) => {
             
             if (createdProduct.hasOwnProperty("err")) {
                 if (createdProduct["err"].name === 'SequelizeValidationError') {
-                    return response.status(400).json({
-                      message: createdProduct["err"].errors.map(e => e.message)
-                    })
+                    return logError.setAndLogError(400, createdProduct["err"].errors.map(e => e.message), response)
+                    // return response.status(400).json({
+                    //   message: createdProduct["err"].errors.map(e => e.message)
+                    // })
                   } else {
                     if (createdProduct["err"].original.constraint == "Products_sku_key") {
-                        return response.status(400).json({
-                            message: "Product with given sku already exists"
-                        });
+                        return logError.setAndLogError(400, "Product with given sku already exists", response)
+                        // return response.status(400).json({
+                        //     message: "Product with given sku already exists"
+                        // });
                     } else {
-                        return response.status(400).json({
-                            message: "Bad Request"
-                          })
+                        return logError.setAndLogError(400, "Bad Request", response)
+                        // return response.status(400).json({
+                        //     message: "Bad Request"
+                        //   })
                     }
                 }
 
             } else {
+                logger.info(`201: Product created successfully with id: ${createdProduct.id}`);
                 return response.status(201).json({
                     "id": createdProduct.id,
                     "name": createdProduct.name,
@@ -145,12 +159,14 @@ const createProduct = async (request, response) => {
 }
 
 const updateProduct = async (request, response) => {
+    statsd_config.statsd.increment('api.product.http.patch.count');
     try {
 
         if (request.body.id || request.body.date_added || request.body.date_last_updated || request.body.owner_user_id) {
-            return response.status(400).json({
-                message: "Bad request"
-            });
+            return logError.setAndLogError(400, "Bad request", response)
+            // return response.status(400).json({
+            //     message: "Bad request"
+            // });
         }
 
         const {passwordValid, data} = await authorizeAndGetUser(request, response)
@@ -160,9 +176,10 @@ const updateProduct = async (request, response) => {
             const id = request.params.id;
 
             if(isNaN(id)) {
-                return response.status(400).json({
-                    message: 'Invalid id provided'
-                });
+                return logError.setAndLogError(400, "Invalid id provided", response)
+                // return response.status(400).json({
+                //     message: 'Invalid id provided'
+                // });
             }
 
             const {
@@ -182,19 +199,22 @@ const updateProduct = async (request, response) => {
             }
 
             if (quantity && typeof quantity != "number") {
-                return response.status(400).json({
-                    message: 'Quantity should be a number'
-                });
+                return logError.setAndLogError(400, "Quantity should be a number", response)
+                // return response.status(400).json({
+                //     message: 'Quantity should be a number'
+                // });
             }
             const previousProduct = await (productService.getProduct(id));
 
             if (!previousProduct) {
-                return response.status(404).json({
-                    message: 'Product not found'
-                });
+                return logError.setAndLogError(404, "Product not found", response)
+                // return response.status(404).json({
+                //     message: 'Product not found'
+                // });
             }
 
             if (data.id != previousProduct.owner_user_id) {
+                return logError.setAndLogError(403, "Access denied", response)
                 return {data: response.status(403).json({
                     message: 'Access denied'
                 })};
@@ -203,22 +223,26 @@ const updateProduct = async (request, response) => {
             const updatedProduct = await (productService.updateProduct(id, product))
             if (updatedProduct.hasOwnProperty("err")) {
                 if (updatedProduct["err"].name === 'SequelizeValidationError') {
-                    return response.status(400).json({
-                        message: updatedProduct["err"].errors.map(e => e.message)
-                    })
+                    return logError.setAndLogError(400, updatedProduct["err"].errors.map(e => e.message), response)
+                    // return response.status(400).json({
+                    //     message: updatedProduct["err"].errors.map(e => e.message)
+                    // })
                   } else {
                     if (updatedProduct["err"].original.constraint == "Products_sku_key") {
-                        return response.status(400).json({
-                            message: "Product with given sku already exists"
-                        });
+                        return logError.setAndLogError(400, "Product with given sku already exists", response)
+                        // return response.status(400).json({
+                        //     message: "Product with given sku already exists"
+                        // });
                     } else {
-                        return response.status(400).json({
-                            message: "Bad Request"
-                          })
+                        return logError.setAndLogError(400, "Bad Request", response)
+                        // return response.status(400).json({
+                        //     message: "Bad Request"
+                        //   })
                     }
                 }
 
             } else {
+                logger.info(`204: Product updated successfully with id: ${id}`);
                 return response.status(204).json({
                 });
             }
@@ -234,6 +258,7 @@ const updateProduct = async (request, response) => {
 }
 
 const updateProductForPut = async (request, response) => {
+    statsd_config.statsd.increment('api.product.http.put.count');
     try {
 
         const {
@@ -245,9 +270,10 @@ const updateProductForPut = async (request, response) => {
           } = request.body;
 
         if (!name || !description || !sku || !manufacturer || !quantity) {
-            return response.status(400).json({
-                message: "Bad request"
-            });
+            return logError.setAndLogError(400, "Bad request", response)
+            // return response.status(400).json({
+            //     message: "Bad request"
+            // });
         }
         return updateProduct(request, response);
 
@@ -258,6 +284,7 @@ const updateProductForPut = async (request, response) => {
 }
 
 const deleteProduct = async (request, response) => {
+    statsd_config.statsd.increment('api.product.http.delete.count');
     try {
 
         const {passwordValid, data} = await authorizeAndGetUser(request, response)
@@ -267,22 +294,25 @@ const deleteProduct = async (request, response) => {
             const id = request.params.id;
 
             if(isNaN(id)) {
-                return response.status(400).json({
-                    message: 'Invalid id provided'
-                });
+                return logError.setAndLogError(400, "Invalid id provided", response)
+                // return response.status(400).json({
+                //     message: 'Invalid id provided'
+                // });
             }
 
             const product = await (productService.getProduct(id));
             if (!product) {
-                return response.status(404).json({
-                    message: 'Product not found'
-                });
+                return logError.setAndLogError(404, "Product not found", response)
+                // return response.status(404).json({
+                //     message: 'Product not found'
+                // });
             }
 
             if (data.id != product.owner_user_id) {
-                return {data: response.status(403).json({
-                    message: 'Access denied'
-                })};
+                return logError.setAndLogError(403, "Access denied", response)
+                // return {data: response.status(403).json({
+                //     message: 'Access denied'
+                // })};
             }
 
             const images = await (productImagesService.getImagesByProduct(id));
@@ -293,10 +323,12 @@ const deleteProduct = async (request, response) => {
             const deleteData = await (productService.deleteProduct(id));
             console.log("DeletedData = ", deleteData);
             if (deleteData.hasOwnProperty("err")) {
-                return response.status(400).json({
-                    message: "Bad Request"
-                  })
+                return logError.setAndLogError(400, "Bad Request", response)
+                // return response.status(400).json({
+                //     message: "Bad Request"
+                //   })
             } else {
+                logger.info(`204: Product deleted successfully with id: ${id}`);
                 return response.status(204).json({
                 });
             }
@@ -316,9 +348,10 @@ const authorizeAndGetUser = async (request, response) => {
 
         // check for basic auth header
         if (!request.headers.authorization || request.headers.authorization.indexOf('Basic ') === -1) {
-            return response.status(401).json({
-                message: 'Missing Authorization Header'
-            });
+            return logError.setAndLogError(401, "Missing Authorization Header", response)
+            // return response.status(401).json({
+            //     message: 'Missing Authorization Header'
+            // });
         }
 
         // verify auth credentials
@@ -329,17 +362,19 @@ const authorizeAndGetUser = async (request, response) => {
         const userFromEmail = await userService.getUserByEmail(email);
         
         if (!userFromEmail) {
-            return { data: response.status(401).json({
-                message: 'Authorization failed'
-            })}; 
+            return logError.setAndLogError(401, "Authorization failed", response)
+            // return { data: response.status(401).json({
+            //     message: 'Authorization failed'
+            // })}; 
         }
         
         const db_password = userFromEmail.password;
         const passwordValid = await bcrypt.compare(passwordForAuth, db_password)
             if (!passwordValid) {
-                return {data: response.status(401).json({
-                    message: 'Authorization failed'
-                })}; 
+                return logError.setAndLogError(401, "Authorization failed", response)
+                // return {data: response.status(401).json({
+                //     message: 'Authorization failed'
+                // })}; 
             } else {
                 return {
                     passwordValid: passwordValid,
@@ -360,9 +395,10 @@ const getProductByUser = async (request, response) => {
         const productId = request.params.id;
   
         if (isNaN(productId)) {
-          return response.status(400).send({
-            message: "Invalid Product ID",
-          });
+          return logError.setAndLogError(400, "Invalid Product ID", response)
+        //   return response.status(400).send({
+        //     message: "Invalid Product ID",
+        //   });
         }
       
     
@@ -370,15 +406,16 @@ const getProductByUser = async (request, response) => {
             if (passwordValid) {
                 const product = await productService.getProduct(productId);
                 if (!product) {
-
-                    return { data: response.status(404).json({
-                        message: 'Product not found'
-                    })}; 
+                    return logError.setAndLogError(404, "Product not found", response)
+                    // return { data: response.status(404).json({
+                    //     message: 'Product not found'
+                    // })}; 
                 
                 } else if (product.owner_user_id != data.id) {
-                    return { data: response.status(403).json({
-                        message: 'Access denied'
-                    })}; 
+                    return logError.setAndLogError(403, "Access denied", response)
+                    // return { data: response.status(403).json({
+                    //     message: 'Access denied'
+                    // })}; 
                 
                 } else {
                     return { 
@@ -395,6 +432,7 @@ const getProductByUser = async (request, response) => {
   };
 
 const setErrorResponse = (error, response) => {
+    logger.error(`500: ${error}`);
     response.status(500);
     response.json(error);
     return response

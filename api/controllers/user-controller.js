@@ -1,8 +1,12 @@
 const userService = require('../services/user-service');
+const logger = require('../../logger.js');
+const statsd_config = require('../../statsd_config');
+const logError = require('../../log_error')
 
 const bcrypt = require("bcrypt");
 var validator = require("email-validator");
 var passwordValidator = require('password-validator');
+
 var schema = new passwordValidator();
 schema
   .is().min(6) // Min password length should be 6
@@ -13,6 +17,7 @@ schema
   .has().not().spaces(); // Should not contain any spaces
 
     const setErrorResponse = (error, response) => {
+        logger.error(`500: ${error}`);
         response.status(500);
         response.json(error);
         return response
@@ -30,11 +35,13 @@ schema
     }
 
     const getUser = async (request, response) => {
+    statsd_config.statsd.increment('api.user.http.get.count');
     try {
 
         const {passwordValid, data} = await authorizeAndGetUser(request, response)
         if (passwordValid) {
             const obj = data
+            logger.info(`200: User retrieved with id: ${obj.id}`);
             return response.status(200).json({
                 "id": obj.id, 
                 "first_name": obj.first_name, 
@@ -54,6 +61,7 @@ schema
 }
 
 const createUser = async (request, response) => {
+    statsd_config.statsd.increment('api.user.http.post.count');
     try {
         const {
             first_name,
@@ -63,9 +71,11 @@ const createUser = async (request, response) => {
           } = request.body;
         
           if (!first_name || !last_name || !username || !password) {
-            return response.status(400).json({
-                message: "Field is missing"
-              });
+            return logError.setAndLogError(400, "Field is missing", response)
+            // logger.error(`400: Field is missing`);
+            // return response.status(400).json({
+            //     message: "Field is missing"
+            //   });
           } else {
             if (validator.validate(username) && schema.validate(password)) {
                 var hashPwd = await bcrypt.hash(password, 10);
@@ -81,22 +91,27 @@ const createUser = async (request, response) => {
                 data = await (userService.createUser(reqUser))
                 if (data.hasOwnProperty("err")) {
                     if (data["err"].original.code == "23505" && data["err"].original.constraint == "Users_username_key") {
-                        return response.status(400).json({
-                            message: "Email already exists"
-                        });
+                        return logError.setAndLogError(400, "Email already exists", response)
+                        // logger.error(`400: Email already exists`);
+                        // return response.status(400).json({
+                        //     message: "Email already exists"
+                        // });
                     }
                 } else {
+                    logger.info(`User created successfully with id: ${data.id}`);
                     return setSuccessResponse(data, response);
                 }
 
                 
               } else {
-                return response.status(400).json({
-                  message: "Invalid Email or password..!!",
-                  "password_guidelines: ": ["Minimum length should be 6", "Maximum length should be 100", "Must have atleast 1 uppercase letter",
-                    "Must have atleast 1 lowercase letter", "Must have atleast 1 digit", "Should not have any spaces"
-                  ]
-                });
+                return logError.setAndLogError(400, "Invalid Email or password", response)
+                // logger.error(`400: Invalid Email or password`);
+                // return response.status(400).json({
+                //   message: "Invalid Email or password..!!",
+                //   "password_guidelines: ": ["Minimum length should be 6", "Maximum length should be 100", "Must have atleast 1 uppercase letter",
+                //     "Must have atleast 1 lowercase letter", "Must have atleast 1 digit", "Should not have any spaces"
+                //   ]
+                // });
               }
           }
 
@@ -108,18 +123,23 @@ const createUser = async (request, response) => {
 }
 
 const updateUser = async (request, response) => {
+    statsd_config.statsd.increment('api.user.http.put.count');
     try {
 
         if (request.body.id || request.body.createdAt || request.body.updatedAt) {
-            return response.status(400).json({
-                message: "Bad request"
-            });
+            return logError.setAndLogError(400, "Bad request", response)
+            // logger.error(`400: Bad request`);
+            // return response.status(400).json({
+            //     message: "Bad request"
+            // });
         }
 
         if (!request.body.username) {
-            return response.status(400).json({
-                message: "Username field is required"
-            });
+            return logError.setAndLogError(400, "Username field is required", response)
+            // logger.error(`400: Username field is required`);
+            // return response.status(400).json({
+            //     message: "Username field is required"
+            // });
         }
 
         const {passwordValid, data} = await authorizeAndGetUser(request, response)
@@ -127,9 +147,11 @@ const updateUser = async (request, response) => {
         if (passwordValid) {
 
             if (request.body.username != data.username) {
-                return response.status(400).json({
-                    message: "Username cannot be modified"
-                });
+                return logError.setAndLogError(400, "Username cannot be modified", response)
+                // logger.error(`400: Username cannot be modified`);
+                // return response.status(400).json({
+                //     message: "Username cannot be modified"
+                // });
             }
     
             const {
@@ -139,25 +161,30 @@ const updateUser = async (request, response) => {
               } = request.body;
 
               if (first_name == "" || last_name == "" || password == "") {
-                return response.status(400).json({
-                    message: "Field cannot contain null values"
-                  });
+                return logError.setAndLogError(400, "Field cannot contain null values", response)
+                // logger.error(`400: Field cannot contain null values`);
+                // return response.status(400).json({
+                //     message: "Field cannot contain null values"
+                //   });
               } else {
                 if (password) {
                     if (schema.validate(password)) {
                         var hashPwd = await bcrypt.hash(password, 10);
                         request.body.password = hashPwd
                       } else {
-                        return response.status(401).json({
-                          message: "Invalid password..!!",
-                          "password_guidelines: ": ["Minimum length should be 6", "Maximum length should be 100", "Must have atleast 1 uppercase letter",
-                          "Must have atleast 1 lowercase letter", "Must have atleast 1 digit", "Should not have any spaces"      
-                          ]
-                        });
+                        return logError.setAndLogError(401, "Invalid password", response)
+                        // logger.error(`401: Invalid password`);
+                        // return response.status(401).json({
+                        //   message: "Invalid password..!!",
+                        //   "password_guidelines: ": ["Minimum length should be 6", "Maximum length should be 100", "Must have atleast 1 uppercase letter",
+                        //   "Must have atleast 1 lowercase letter", "Must have atleast 1 digit", "Should not have any spaces"      
+                        //   ]
+                        // });
                       }
                 }
                 const updatedUser = await (userService.updateUser(data.id, request.body))
                     const obj = updatedUser[1]
+                    logger.info(`204: User updated`);
                     return response.status(204).json({
                     });
                 
@@ -179,16 +206,20 @@ const authorizeAndGetUser = async (request, response) => {
         const id = request.params.id;
 
         if(isNaN(id)) {
-            return response.status(400).json({
-                message: 'Invalid id provided'
-            });
+            return logError.setAndLogError(400, "Invalid id provided", response)
+            // logger.error(`400: Invalid id provided`);
+            // return response.status(400).json({
+            //     message: 'Invalid id provided'
+            // });
         }
 
         // check for basic auth header
         if (!request.headers.authorization || request.headers.authorization.indexOf('Basic ') === -1) {
-            return response.status(401).json({
-                message: 'Missing Authorization Header'
-            });
+            return logError.setAndLogError(401, "Missing Authorization Header", response)
+            // logger.error(`401: Missing Authorization Header`);
+            // return response.status(401).json({
+            //     message: 'Missing Authorization Header'
+            // });
         }
 
         // verify auth credentials
@@ -199,31 +230,39 @@ const authorizeAndGetUser = async (request, response) => {
 
         data = await userService.getUser(id);
         if (!data) {
-            return response.status(404).json({
-                message: 'User not found'
-            });
+            return logError.setAndLogError(404, "User not found", response)
+            // logger.error(`404: User not found`);
+            // return response.status(404).json({
+            //     message: 'User not found'
+            // });
         }
 
         const userFromEmail = await userService.getUserByEmail(email);
         
         if (!userFromEmail) {
-            return { data: response.status(401).json({
-                message: 'Authorization failed'
-            })}; 
+            return logError.setAndLogError(401, "Authorization failed", response)
+            // logger.error(`401: Authorization failed`);
+            // return { data: response.status(401).json({
+            //     message: 'Authorization failed'
+            // })}; 
         }
         
         const db_password = userFromEmail.password;
         const passwordValid = await bcrypt.compare(passwordForAuth, db_password)
             if (!passwordValid) {
-                return {data: response.status(401).json({
-                    message: 'Authorization failed'
-                })}; 
+                return logError.setAndLogError(401, "Authorization failed", response)
+                // logger.error(`401: Authorization failed`);
+                // return {data: response.status(401).json({
+                //     message: 'Authorization failed'
+                // })}; 
             } else {
 
                 if (userFromEmail.id != id) {
-                    return {data: response.status(403).json({
-                        message: 'Access denied'
-                    })};
+                    return logError.setAndLogError(403, "Access denied", response)
+                    // logger.error(`403: Access denied`);
+                    // return {data: response.status(403).json({
+                    //     message: 'Access denied'
+                    // })};
                 }
 
                 return {

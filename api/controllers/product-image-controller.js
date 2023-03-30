@@ -7,6 +7,8 @@ const productController  = require('../controllers/product-controller.js');
 const productImageService  = require('../services/product-image-service.js');
 
 const s3 = require('./s3-config').s3;
+const statsd_config = require('../../statsd_config');
+const logError = require('../../log_error')
 
 const storage = multer.memoryStorage();
 const multerFilter = (req, file, cb) => {
@@ -75,6 +77,7 @@ const getSignedURL = (bucket, key, expires = 3600) => {
 };
 
 const setErrorResponse = (error, response) => {
+    logger.error(`500: ${error}`);
     response.status(500);
     response.json(error);
     return response
@@ -87,18 +90,20 @@ const setSuccessResponse = (obj, response) => {
 };
 
 const uploadImage = async (request, response) => {
+  statsd_config.statsd.increment('api.image.http.post.count');
   try {
     const result = await productController.getProductByUser(
       request,
       response
     );
     if (!result.product) {
-      return {result};
+      return result;
     } else {
       if (!("file" in request.body) || !request.file) {
-        return response.status(400).json({
-          message: "Bad Request",
-        });
+        return logError.setAndLogError(400, "Bad request", response)
+        // return response.status(400).json({
+        //   message: "Bad Request",
+        // });
       }
 
       const imageId = uuidv4();
@@ -111,15 +116,16 @@ const uploadImage = async (request, response) => {
         s3_bucket_path: s3_image_url,
       };
       const data = await productImageService.uploadImage(payload);
+      logger.info(`201: Image uploaded successfully for product with productId: ${result.product.id} having imageId: ${imageId}`);
       return setSuccessResponse(data, response);
     }
   } catch (error) {
-    console.log(error);
     return {data: setErrorResponse(error, response)};
   }
 };
 
 const getImagesList = async (request, response) => {
+  statsd_config.statsd.increment('api.imageList.http.get.count');
   try {
     const result = await productController.getProductByUser(
       request,
@@ -142,6 +148,7 @@ const getImagesList = async (request, response) => {
             };
           });
         });
+      logger.info(`200: Images retrieved successfully for product with productId: ${image.dataValues.product_id} having imageId: ${image.dataValues.image_id}`);
       return response.status(200).send(data);
     }
   } catch (error) {
@@ -150,13 +157,15 @@ const getImagesList = async (request, response) => {
 };
 
 const getImage = async (request, response) => {
+  statsd_config.statsd.increment('api.image.http.get.count');
   const productId = request.params.id;
   const imageId = request.params.imageId;
 
   if (!productId || !imageId) {
-    return response.status(400).send({
-      message: "Bad Request"
-    });
+    return logError.setAndLogError(400, "Bad request", response)
+    // return response.status(400).send({
+    //   message: "Bad Request"
+    // });
   } else {
     try {
       const result = await productController.getProductByUser(
@@ -168,10 +177,12 @@ const getImage = async (request, response) => {
       } else {
         const image = await productImageService.getImageById(imageId, productId);
         if (!image) {
-          return response.status(404).send({
-            message: "Image not found!"
-          });
+          return logError.setAndLogError(404, "Image not found", response)
+          // return response.status(404).send({
+          //   message: "Image not found!"
+          // });
         } else {
+          logger.info(`200: Image retrieved successfully with imageId: ${image.image_id}`);
           return response.status(200).send({
               image_id: image.image_id,
               product_id: image.product_id,
@@ -188,13 +199,15 @@ const getImage = async (request, response) => {
 }
 
 const deleteImage = async (request, response) => {
+  statsd_config.statsd.increment('api.image.http.delete.count');
   const productId = request.params.id;
   const imageId = request.params.imageId;
 
   if (!productId || !imageId) {
-    return response.status(400).send({
-      message: "Bad Request"
-    });
+    return logError.setAndLogError(400, "Bad request", response)
+    // return response.status(400).send({
+    //   message: "Bad Request"
+    // });
   } else {
     try {
       const result = await productController.getProductByUser(
@@ -206,12 +219,14 @@ const deleteImage = async (request, response) => {
       } else {
         const image = await productImageService.getImageById(imageId, productId);
         if (!image) {
-          return response.status(404).send({
-            message: "Image not found!"
-          });
+          return logError.setAndLogError(404, "Image not found", response)
+          // return response.status(404).send({
+          //   message: "Image not found!"
+          // });
         } else {
           await deleteS3Object(process.env.S3_BUCKET_NAME, `Product ${result.product.id}/${image.image_id}`);
           const res = await productImageService.deleteImage(imageId);
+          logger.info(`204: Image deleted successfully with imageId: ${image.image_id}`);
           return response.status(204).send();
         }
       }
