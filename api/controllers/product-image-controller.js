@@ -9,6 +9,7 @@ const productImageService  = require('../services/product-image-service.js');
 const s3 = require('./s3-config').s3;
 const statsd_config = require('../../statsd_config');
 const logError = require('../../log_error')
+const logger = require('../../logger.js');
 
 const storage = multer.memoryStorage();
 const multerFilter = (req, file, cb) => {
@@ -101,9 +102,6 @@ const uploadImage = async (request, response) => {
     } else {
       if (!("file" in request.body) || !request.file) {
         return logError.setAndLogError(400, "Bad request", response)
-        // return response.status(400).json({
-        //   message: "Bad Request",
-        // });
       }
 
       const imageId = uuidv4();
@@ -163,9 +161,6 @@ const getImage = async (request, response) => {
 
   if (!productId || !imageId) {
     return logError.setAndLogError(400, "Bad request", response)
-    // return response.status(400).send({
-    //   message: "Bad Request"
-    // });
   } else {
     try {
       const result = await productController.getProductByUser(
@@ -178,9 +173,6 @@ const getImage = async (request, response) => {
         const image = await productImageService.getImageById(imageId, productId);
         if (!image) {
           return logError.setAndLogError(404, "Image not found", response)
-          // return response.status(404).send({
-          //   message: "Image not found!"
-          // });
         } else {
           logger.info(`200: Image retrieved successfully with imageId: ${image.image_id}`);
           return response.status(200).send({
@@ -205,9 +197,6 @@ const deleteImage = async (request, response) => {
 
   if (!productId || !imageId) {
     return logError.setAndLogError(400, "Bad request", response)
-    // return response.status(400).send({
-    //   message: "Bad Request"
-    // });
   } else {
     try {
       const result = await productController.getProductByUser(
@@ -220,9 +209,6 @@ const deleteImage = async (request, response) => {
         const image = await productImageService.getImageById(imageId, productId);
         if (!image) {
           return logError.setAndLogError(404, "Image not found", response)
-          // return response.status(404).send({
-          //   message: "Image not found!"
-          // });
         } else {
           await deleteS3Object(process.env.S3_BUCKET_NAME, `Product ${result.product.id}/${image.image_id}`);
           const res = await productImageService.deleteImage(imageId);
