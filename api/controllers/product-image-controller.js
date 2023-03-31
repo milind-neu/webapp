@@ -146,7 +146,7 @@ const getImagesList = async (request, response) => {
             };
           });
         });
-      logger.info(`200: Images retrieved successfully for product with productId: ${image.dataValues.product_id} having imageId: ${image.dataValues.image_id}`);
+      logger.info(`200: Images retrieved successfully for product with productId: ${result.product.id}`);
       return response.status(200).send(data);
     }
   } catch (error) {
