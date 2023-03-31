@@ -49,3 +49,6 @@ npm install
 # Run webapp as a background process
 pm2 start npm --name "webapp" -- run "start"
 pm2 save
+
+# Install the CloudWatch Agent
+sudo yum install amazon-cloudwatch-agent -y

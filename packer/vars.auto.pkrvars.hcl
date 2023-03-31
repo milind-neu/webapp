@@ -13,4 +13,4 @@ volume_type = "gp2"
 volume_name = "/dev/xvda"
 
 sources_to_configure = ["./packer/default.conf", "/home/runner/work/webapp/webapp/release.zip", "./packer/cloudwatch_config.json"]
-shell_script         = ["./packer/config_env_webapp.sh", "./packer/setup_cloudwatch.sh"]
+shell_script         = ["./packer/config_env_webapp.sh"]
