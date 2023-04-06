@@ -11,12 +11,6 @@ sudo systemctl enable nginx
 echo "==> Checking the Nginx status"
 sudo systemctl status nginx
 
-sudo mv /tmp/default.conf /etc/nginx/conf.d/
-
-sudo systemctl restart nginx
-echo "==> Checking the Nginx status"
-sudo systemctl status nginx
-
 # Install Node.js and NPM
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 . ~/.nvm/nvm.sh
