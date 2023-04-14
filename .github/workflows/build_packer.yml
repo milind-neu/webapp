@@ -96,4 +96,4 @@ jobs:
 
       - name: Start Autoscaling instance refresh
         run: |
-          aws autoscaling start-instance-refresh --auto-scaling-group-name aws-dev-asg --strategy Rolling --desired-configuration '{"LaunchTemplate": {"LaunchTemplateName":"asg_launch_config", "Version":"$Latest"}}'
+          aws autoscaling start-instance-refresh --auto-scaling-group-name webapp_asg --strategy Rolling --desired-configuration '{"LaunchTemplate": {"LaunchTemplateName":"asg_launch_config", "Version":"$Latest"}}'
