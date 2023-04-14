@@ -54,7 +54,7 @@ build {
     scripts = var.shell_script
   }
 
-  post-processor "packer_manifest" {
+  post-processor "manifest" {
     output = "pkr_manifest.json"
     strip_path = true
   }
