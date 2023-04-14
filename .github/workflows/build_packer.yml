@@ -58,3 +58,9 @@ jobs:
         
       - name: Building AMI using Packer
         run: packer build './packer/'
+
+      - name: Upload packer manifest.json
+        uses: actions/upload-artifact@v3
+        with:
+          name: pkr_manifest
+          path: pkr_manifest.json
