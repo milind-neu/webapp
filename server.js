@@ -21,6 +21,14 @@ app.get('/healthz', (req, res) => {
       });
 });
 
+app.get('/health', (req, res) => {
+    statsd_config.statsd.increment('api.health.count');
+
+    return res.status(200).json({
+        message: "Server is healthy!!!"
+      });
+});
+
 app.get('/v1/user/:id', userController.getUser)
 app.post('/v1/user', userController.createUser)
 app.put('/v1/user/:id', userController.updateUser)

@@ -53,4 +53,9 @@ build {
   provisioner "shell" {
     scripts = var.shell_script
   }
+
+  post-processor "packer_manifest" {
+    output = "pkr_manifest.json"
+    strip_path = true
+  }
 }
