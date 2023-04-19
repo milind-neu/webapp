@@ -29,20 +29,20 @@ app.get('/health', (req, res) => {
       });
 });
 
-app.get('/v1/user/:id', userController.getUser)
-app.post('/v1/user', userController.createUser)
-app.put('/v1/user/:id', userController.updateUser)
+app.get('/v2/user/:id', userController.getUser)
+app.post('/v2/user', userController.createUser)
+app.put('/v2/user/:id', userController.updateUser)
 
-app.get('/v1/product/:id', productController.getProduct)
-app.post('/v1/product', productController.createProduct)
-app.patch('/v1/product/:id', productController.updateProduct)
-app.put('/v1/product/:id', productController.updateProductForPut)
-app.delete('/v1/product/:id', productController.deleteProduct)
+app.get('/v2/product/:id', productController.getProduct)
+app.post('/v2/product', productController.createProduct)
+app.patch('/v2/product/:id', productController.updateProduct)
+app.put('/v2/product/:id', productController.updateProductForPut)
+app.delete('/v2/product/:id', productController.deleteProduct)
 
-app.post('/v1/product/:id/image', productImageController.upload.single('fileType'), productImageController.uploadImage)
-app.get('/v1/product/:id/image', productImageController.getImagesList)
-app.delete('/v1/product/:id/image/:imageId', productImageController.deleteImage)
-app.get('/v1/product/:id/image/:imageId', productImageController.getImage)
+app.post('/v2/product/:id/image', productImageController.upload.single('fileType'), productImageController.uploadImage)
+app.get('/v2/product/:id/image', productImageController.getImagesList)
+app.delete('/v2/product/:id/image/:imageId', productImageController.deleteImage)
+app.get('/v2/product/:id/image/:imageId', productImageController.getImage)
 
 module.exports = app.listen(port, () => {
     console.log(`Server listening on the port  ${port}`);
